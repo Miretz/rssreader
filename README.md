@@ -1,1 +1,3 @@
 # rssreader
+
+wicket + spring + hibernate
