@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+
+<!-- META -->
+<title>RssReader</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="" />
+
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="css/kickstart.css"
+	media="all" />
+<link rel="stylesheet" type="text/css" href="style.css" media="all" />
+
+<!-- Javascript -->
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="js/kickstart.js"></script>
+
+</head>
+<body>
+
+	<div class="grid">
+		<div class="col_12" style="margin-top: 100px;">
+			<h1 class="center">
+				<p>
+					<i class="fa fa-rss"></i>
+				</p>
+				RssReader
+			</h1>
+			<h6 style="color: #339; margin-bottom: 10px;" class="center">Minimalistic
+				RSS/Atom feed manager</h6>
+		</div>
+
+
+		<div class="col_4 central" style="margin-top: 10px;">
+
+			<!-- Tabs Left -->
+			<ul class="tabs left">
+				<li><a href="#tabr1">Login</a></li>
+				<li><a href="#tabr2">Sign Up</a></li>
+			</ul>
+
+			<div id="tabr1" class="tab-content">
+
+
+				<form class="vertical" action="" wicket:id="loginForm">
+
+					<label for="loginUser">Username</label> <input id="loginUsername"
+						wicket:id="loginUsername" type="text" placeholder="jennifer.park" />
+
+					<label for="loginPasword">Password</label> <input id="loginPasword"
+						wicket:id="loginPassword" type="password" placeholder="password" />
+
+					<button class="large green">
+						<i class="fa fa-sign-in"></i> Login
+					</button>
+
+				</form>
+				<br />
+				<div wicket:id="loginFeedback"></div>
+
+			</div>
+			<div id="tabr2" class="tab-content">
+
+
+
+				<form class="vertical" action="" wicket:id="signupForm">
+
+					<label for="signupUser">Username</label> <input id="signupUsername"
+						wicket:id="signupUsername" type="text" placeholder="jennifer.park" />
+					<label for="signupPasword">Password</label> <input
+						id="signupPasword" wicket:id="signupPassword" type="password"
+						placeholder="password" />
+
+					<button class="large blue">
+						<i class="fa fa-user"></i> Sign Up
+					</button>
+
+				</form>
+				<br />
+				<div wicket:id="signupFeedback"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- End Grid -->
+</body>
+</html>

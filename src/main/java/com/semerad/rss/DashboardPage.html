@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+
+<!-- META -->
+<title>RssReader</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="" />
+
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="css/kickstart.css"
+	media="all" />
+<link rel="stylesheet" type="text/css" href="style.css" media="all" />
+
+<!-- Javascript -->
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="js/kickstart.js"></script>
+
+</head>
+<body>
+
+	<div class="grid">
+		<div class="col_6" style="margin-top: 10px; padding-left: 10px;">
+			<h1 style="color: #333;">
+				<p>
+					<i class="fa fa-rss">RssReader</i>
+				</p>				
+			</h1>
+			</div>
+			
+			<div class="col_6 right">
+			<wicket:link>
+			<a class="button fa fa-cog" href="ManageFeedsPage.html">Manage Feeds</a>
+			</wicket:link>
+			<a class="button red fa fa-sign-out" wicket:id="logOut">Log Out</a>
+			</div>
+		<div class="col_12 central" style="margin-top: 10px;">
+		
+			<hr class="alt2" />
+			
+			<h4 style="color: #339; margin-bottom: 10px;">
+			<a class="button orange fa fa-refresh" wicket:id="synchronize"></a>
+			Feed Messages
+			</h4>
+						
+			<table style="margin-top: 20px;">
+			<thead><tr>
+				<th>Read</th>
+				<th>Publish Date</th>
+				<th>Title</th>
+				<th>Summary</th>
+				<th>Like</th>				
+			</tr></thead>
+			<tbody>
+			<tr wicket:id="messages">
+				<td><span wicket:id="exclamation" class="fa fa-2x fa-exclamation"></span></td>
+				<td wicket:id="publishDate"></td>
+				<td>
+					<a wicket:id="messageUrl"><span wicket:id="title"></span></a>
+				</td>
+				<td wicket:id="summary"></td>
+				<td><span wicket:id="heart" class="fa fa-2x fa-heart"></span></td>
+			</tr>
+			</tbody>
+			</table>
+			
+		</div>
+	</div>
+	<!-- End Grid -->
+</body>
+</html>

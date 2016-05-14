@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+
+<!-- META -->
+<title>RssReader</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="" />
+
+<!-- CSS -->
+<link rel="stylesheet" type="text/css" href="css/kickstart.css"
+	media="all" />
+<link rel="stylesheet" type="text/css" href="style.css" media="all" />
+
+<!-- Javascript -->
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="js/kickstart.js"></script>
+
+</head>
+<body>
+
+	<div class="grid">
+		<div class="col_6"
+			style="margin-top: 10px; padding-left: 10px;">
+			<h1 style="color: #333;">
+				<p>
+					<i class="fa fa-rss">RssReader</i>
+				</p>
+			</h1>
+		</div>
+
+		<div class="col_6 right">
+			<wicket:link>
+				<a class="button fa fa-arrow-left" href="DashboardPage.html">Dashboard</a>
+			</wicket:link>
+		</div>
+		
+		<div class="col_12 central" style="margin-top: 10px;">
+			
+			<hr class="alt2" />
+
+			<h4 style="color: #339; margin-bottom: 10px;">Manage Feeds</h4>
+
+			<h6 style="margin-bottom: 10px; margin-top: 40px;">Add a 
+				new Feed</h6>
+
+			<form wicket:id="feedForm" class="vertical" action="">
+				<label for="url">Feed Url</label> <input id="url" wicket:id="url" type="text" />
+				<label for="name">Feed Name</label> <input id="name" wicket:id="name" type="text" /> 
+				<button class="large orange">
+					<i class="fa fa-paper-plane"></i> Add Feed
+				</button>
+			</form>
+
+			<h6 style="margin-bottom: 10px; margin-top: 40px;">Feed List</h6>
+
+			<table class="sortable">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Url</th>
+						<th>Delete</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr wicket:id="feeds">
+						<td wicket:id="name">1/1/2004</td>
+						<td wicket:id="url">Comment text goes here.</td>
+						<td wicket:id="delete"><i class="fa fa-times" style="color: red; cursor: pointer; font-size: x-large;" aria-hidden="true"></i></td>
+					</tr>
+				</tbody>
+			</table>
+
+			
+
+		</div>
+	</div>
+	<!-- End Grid -->
+</body>
+</html>
