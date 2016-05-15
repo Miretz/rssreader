@@ -1,6 +1,7 @@
 package com.semerad.rss.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,11 +33,12 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	public Account login(final String username, final String password) {
 		final List<Account> accountsWithUsername = accountDao.findByUsername(username);
-		for (final Account account : accountsWithUsername) {
-			// validate hashed password
-			if (PasswordHashUtil.validatePassword(password, account.getPassword())) {
-				return account;
-			}
+
+		final Optional<Account> maybeAccount = accountsWithUsername.stream()
+				.filter(acc -> PasswordHashUtil.validatePassword(password, acc.getPassword())).findFirst();
+
+		if (maybeAccount.isPresent()) {
+			return maybeAccount.get();
 		}
 		return null;
 	}

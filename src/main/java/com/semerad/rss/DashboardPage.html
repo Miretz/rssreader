@@ -24,9 +24,7 @@
 	<div class="grid">
 		<div class="col_6" style="margin-top: 10px; padding-left: 10px;">
 			<h1 style="color: #333;">
-				<p>
 					<i class="fa fa-rss">RssReader</i>
-				</p>				
 			</h1>
 			</div>
 			
@@ -39,9 +37,22 @@
 		<div class="col_12 central" style="margin-top: 10px;">
 		
 			<hr class="alt2" />
+		
+			<div class="right">
+			<form action="" wicket:id="searchForm">
+			 	<input id="searchField" wicket:id="searchField" type="text" placeholder="Search..." />
+				<button class="medium">
+						<i class="fa fa-search"></i> Search
+				</button>
+			</form>
+			</div>		
+		
+		
+			<hr class="alt2" />
 			
 			<h4 style="color: #339; margin-bottom: 10px;">
-			<a class="button orange fa fa-refresh" wicket:id="synchronize"></a>
+			<a class="button orange fa fa-download" wicket:id="synchronize"></a>
+			<a class="button fa fa-refresh" wicket:id="refresh"></a>
 			Feed Messages
 			</h4>
 						

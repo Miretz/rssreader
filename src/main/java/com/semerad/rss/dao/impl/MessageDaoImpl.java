@@ -8,6 +8,9 @@ import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.LogicalExpression;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -60,9 +63,8 @@ public class MessageDaoImpl implements MessageDao {
 
 		final List<Feed> feeds = criteria.list();
 		final List<Message> messages = new ArrayList<>();
-		for (final Feed feed : feeds) {
-			messages.addAll(feed.getMessages());
-		}
+
+		feeds.forEach(e -> messages.addAll(e.getMessages()));
 
 		messages.sort((p1, p2) -> p2.getPublishDate().compareTo(p1.getPublishDate()));
 
@@ -77,8 +79,7 @@ public class MessageDaoImpl implements MessageDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Message> search(final Feed feed, final int firstResult, final int pageSize, final String column,
-			final String value) {
+	public List<Message> search(final Feed feed, final int firstResult, final int pageSize, final String value) {
 		if (feed == null) {
 			// if feed is unspecified return messages from all feeds
 			return Collections.emptyList();
@@ -87,9 +88,17 @@ public class MessageDaoImpl implements MessageDao {
 		criteria.add(Restrictions.eq("feed", feed));
 		criteria.setFirstResult(firstResult);
 		criteria.setMaxResults(pageSize);
-		criteria.add(Restrictions.like(column, value));
-		return criteria.list();
 
+		addTextSearchCriteria(value, criteria);
+
+		return criteria.list();
+	}
+
+	protected void addTextSearchCriteria(final String value, final Criteria criteria) {
+		final Criterion price = Restrictions.like("summary", value, MatchMode.ANYWHERE);
+		final Criterion name = Restrictions.like("title", value, MatchMode.ANYWHERE);
+		final LogicalExpression orExp = Restrictions.or(price, name);
+		criteria.add(orExp);
 	}
 
 	@Override
@@ -113,20 +122,27 @@ public class MessageDaoImpl implements MessageDao {
 		}
 		final Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Feed.class);
 		criteria.add(Restrictions.eq("account", account));
-
 		final List<Feed> feeds = criteria.list();
-		int size = 0;
-		for (final Feed feed : feeds) {
-			size += feed.getMessages().size();
-		}
-		return size;
+
+		return feeds.stream().mapToInt(e -> e.getMessages().size()).sum();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public List<Message> search(final Account account, final int firstResult, final int pageSize, final String column,
-			final String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Message> search(final Account account, final int firstResult, final int pageSize, final String value) {
+		if (account == null) {
+			// if account is unspecified return empty list
+			return Collections.emptyList();
+		}
+		final Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Message.class);
+		criteria.createAlias("feed", "f");
+		criteria.add(Restrictions.eq("f.account", account));
+		criteria.setFirstResult(firstResult);
+		criteria.setMaxResults(pageSize);
+
+		addTextSearchCriteria(value, criteria);
+
+		return criteria.list();
 	}
 
 	@Override
@@ -134,7 +150,7 @@ public class MessageDaoImpl implements MessageDao {
 
 		final StatelessSession session = sessionFactory.openStatelessSession();
 
-		for (final Message m : messages) {
+		messages.forEach(m -> {
 			final Transaction tx = session.beginTransaction();
 			try {
 				tx.setTimeout(5);
@@ -145,7 +161,7 @@ public class MessageDaoImpl implements MessageDao {
 				tx.rollback();
 				LOGGER.warn("Ignoring duplicate: " + m);
 			}
-		}
+		});
 
 		session.close();
 	}

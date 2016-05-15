@@ -9,11 +9,15 @@ import org.apache.wicket.authroles.authentication.AuthenticatedWebSession;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.StatelessForm;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
+import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
+import org.apache.wicket.util.string.Strings;
 
 import com.semerad.rss.guimodels.MessageGui;
 import com.semerad.rss.model.Account;
@@ -24,10 +28,12 @@ public class DashboardPage extends WebPage {
 
 	private static final long serialVersionUID = -2393491973831377023L;
 
+	@SpringBean
+	private MessageService messageService;
+
 	private final List<MessageGui> messages = new ArrayList<>();
 
-	@SpringBean
-	MessageService messageService;
+	private String searchField;
 
 	@Override
 	protected void onConfigure() {
@@ -45,8 +51,7 @@ public class DashboardPage extends WebPage {
 		super.onInitialize();
 
 		// get current logged in account
-		final BasicAuthenticationSession basicSession = (BasicAuthenticationSession) AuthenticatedWebSession.get();
-		final Account currentAccount = basicSession.getCurrentAccount();
+		final Account currentAccount = ((BasicAuthenticationSession) AuthenticatedWebSession.get()).getCurrentAccount();
 
 		loadMessages(currentAccount);
 
@@ -55,36 +60,28 @@ public class DashboardPage extends WebPage {
 
 			@Override
 			public void onClick() {
-				synchronizeFeeds();
+				synchronizeFeeds(currentAccount);
 			}
 		});
 
-		// add to Page
+		// Add refresh link
+		add(new Link("refresh") {
+			@Override
+			public void onClick() {
+				loadMessages(currentAccount);
+			}
+		});
+
+		// add the list of feed messages
 		add(new PropertyListView<MessageGui>("messages", messages) {
 			@Override
 			public void populateItem(final ListItem<MessageGui> listItem) {
-
-				final Label read = new Label("exclamation", "");
-				if (listItem.getModelObject().isRead()) {
-					read.add(new AttributeAppender("style", "display: none;", " "));
-				}
-				listItem.add(read);
-
-				listItem.add(new Label("publishDate"));
-				listItem.add(
-						new ExternalLink("messageUrl", listItem.getModelObject().getUrl()).add(new Label("title")));
-				listItem.add(new Label("summary").setEscapeModelStrings(false));
-
-				final Label favourite = new Label("heart", "");
-				if (listItem.getModelObject().isFavourite()) {
-					favourite.add(new AttributeAppender("style", "color: red;", " "));
-				} else {
-					favourite.add(new AttributeAppender("style", "color: #ddd;", " "));
-				}
-				listItem.add(favourite);
-
+				populateListItem(listItem);
 			}
 		}).setVersioned(false);
+
+		// add the search form
+		add(createSearchForm(currentAccount));
 
 		// Add logout link
 		add(new Link("logOut") {
@@ -97,28 +94,66 @@ public class DashboardPage extends WebPage {
 		});
 	}
 
-	private void loadMessages(final Account currentAccount) {
+	protected void populateListItem(final ListItem<MessageGui> listItem) {
+		final Label read = new Label("exclamation", "");
+		if (listItem.getModelObject().isRead()) {
+			read.add(new AttributeAppender("style", "display: none;", " "));
+		}
+		listItem.add(read);
+
+		listItem.add(new Label("publishDate"));
+		listItem.add(new ExternalLink("messageUrl", listItem.getModelObject().getUrl()).add(new Label("title")));
+		listItem.add(new Label("summary").setEscapeModelStrings(false));
+
+		final Label favourite = new Label("heart", "");
+		if (listItem.getModelObject().isFavourite()) {
+			favourite.add(new AttributeAppender("style", "color: red;", " "));
+		} else {
+			favourite.add(new AttributeAppender("style", "color: #ddd;", " "));
+		}
+		listItem.add(favourite);
+	}
+
+	protected void loadMessages(final Account currentAccount) {
 
 		messages.clear();
 
 		// Load messages from Database
 		final int size = messageService.messageCount(currentAccount);
 		final List<Message> messagesFromDb = messageService.list(currentAccount, 0, size);
-		for (final Message feed : messagesFromDb) {
-			messages.add(new MessageGui(feed));
-		}
+
+		messagesFromDb.forEach(e -> messages.add(new MessageGui(e)));
 
 	}
 
-	protected void synchronizeFeeds() {
-		// get current logged in account
-		final BasicAuthenticationSession basicSession = (BasicAuthenticationSession) AuthenticatedWebSession.get();
-		final Account currentAccount = basicSession.getCurrentAccount();
+	protected void synchronizeFeeds(final Account currentAccount) {
 
-		// synchronize feeds
+		// synchronize feeds from the web
 		messageService.synchronizeFeeds(currentAccount);
 
 		loadMessages(currentAccount);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes", "serial" })
+	private StatelessForm createSearchForm(final Account currentAccount) {
+		final StatelessForm signupForm = new StatelessForm("searchForm") {
+			@Override
+			protected void onSubmit() {
+				if (Strings.isEmpty(searchField)) {
+					loadMessages(currentAccount);
+					return;
+				}
+
+				final List<Message> searchResults = messageService.search(currentAccount, 0, 50, searchField);
+				messages.clear();
+				searchResults.forEach(e -> messages.add(new MessageGui(e)));
+
+			}
+
+		};
+		signupForm.setDefaultModel(new CompoundPropertyModel(this));
+		signupForm.add(new TextField("searchField"));
+		return signupForm;
 	}
 
 }

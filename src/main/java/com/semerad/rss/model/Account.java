@@ -1,5 +1,6 @@
 package com.semerad.rss.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,9 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "ACCOUNTS")
-public class Account {
+public class Account implements Serializable {
+
+	private static final long serialVersionUID = 3779918850653994067L;
 
 	@Id
 	@GeneratedValue

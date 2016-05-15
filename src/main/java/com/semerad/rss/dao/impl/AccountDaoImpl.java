@@ -41,7 +41,7 @@ public class AccountDaoImpl implements AccountDao {
 
 	@Override
 	public void delete(final Account account) {
-		if (null != account) {
+		if (account != null) {
 			sessionFactory.getCurrentSession().delete(account);
 		}
 	}

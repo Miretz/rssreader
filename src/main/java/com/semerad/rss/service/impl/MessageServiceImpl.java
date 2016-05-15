@@ -46,15 +46,13 @@ public class MessageServiceImpl implements MessageService {
 	}
 
 	@Override
-	public List<Message> search(final Feed feed, final int firstResult, final int pageSize, final String column,
-			final String value) {
-		return messageDao.search(feed, firstResult, pageSize, column, value);
+	public List<Message> search(final Feed feed, final int firstResult, final int pageSize, final String value) {
+		return messageDao.search(feed, firstResult, pageSize, value);
 	}
 
 	@Override
-	public List<Message> search(final Account account, final int firstResult, final int pageSize, final String column,
-			final String value) {
-		return messageDao.search(account, firstResult, pageSize, column, value);
+	public List<Message> search(final Account account, final int firstResult, final int pageSize, final String value) {
+		return messageDao.search(account, firstResult, pageSize, value);
 	}
 
 	@Override
@@ -64,10 +62,7 @@ public class MessageServiceImpl implements MessageService {
 
 	@Override
 	public void synchronizeFeeds(final Account account) {
-		final List<Feed> feeds = feedDao.list(account);
-		for (final Feed feed : feeds) {
-			remoteFeedDao.synchronizeFeed(feed);
-		}
+		feedDao.list(account).forEach(remoteFeedDao::synchronizeFeed);
 	}
 
 }

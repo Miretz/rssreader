@@ -206,10 +206,4 @@ public class PasswordHashUtil {
 		}
 	}
 
-	/**
-	 * Tests the basic functionality of the PasswordHash class
-	 *
-	 * @param args
-	 *            ignored
-	 */
 }

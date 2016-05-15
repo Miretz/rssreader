@@ -18,7 +18,7 @@ public class HomePage extends WebPage {
 	private static final long serialVersionUID = 1L;
 
 	@SpringBean
-	AccountService accountService;
+	private AccountService accountService;
 
 	private String loginUsername;
 	private String loginPassword;
@@ -34,6 +34,7 @@ public class HomePage extends WebPage {
 	protected void onInitialize() {
 		super.onInitialize();
 
+		// add account service to basic session via setter
 		final BasicAuthenticationSession basicSession = (BasicAuthenticationSession) AuthenticatedWebSession.get();
 		basicSession.setAccountService(accountService);
 
@@ -57,12 +58,10 @@ public class HomePage extends WebPage {
 				accountService.create(signupUsername, signupPassword);
 
 				final boolean authResult = AuthenticatedWebSession.get().signIn(signupUsername, signupPassword);
-				// if authentication succeeds redirect user to the requested
-				// page
 				if (authResult) {
 					continueToOriginalDestination();
 				} else {
-					error("Wrong username or password");
+					error("Error during sign up");
 				}
 
 			}
@@ -84,8 +83,6 @@ public class HomePage extends WebPage {
 				}
 
 				final boolean authResult = AuthenticatedWebSession.get().signIn(loginUsername, loginPassword);
-				// if authentication succeeds redirect user to the requested
-				// page
 				if (authResult) {
 					continueToOriginalDestination();
 				} else {

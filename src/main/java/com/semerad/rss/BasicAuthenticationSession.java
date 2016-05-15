@@ -7,8 +7,9 @@ import org.apache.wicket.request.Request;
 import com.semerad.rss.model.Account;
 import com.semerad.rss.service.AccountService;
 
-@SuppressWarnings("serial")
 public class BasicAuthenticationSession extends AuthenticatedWebSession {
+
+	private static final long serialVersionUID = 1524216743247996335L;
 
 	private AccountService accountService;
 

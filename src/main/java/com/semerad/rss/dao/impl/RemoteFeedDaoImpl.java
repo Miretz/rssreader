@@ -49,10 +49,8 @@ public class RemoteFeedDaoImpl implements RemoteFeedDao {
 			final SyndFeed syndFeed = input.build(new XmlReader(stream));
 
 			final List<SyndEntry> entries = syndFeed.getEntries();
-
 			final List<Message> messages = new ArrayList<>(entries.size());
-
-			for (final SyndEntry entry : entries) {
+			entries.forEach(entry -> {
 				final Message message = new Message();
 				message.setFeed(feed);
 				message.setAuthor(entry.getAuthor());
@@ -62,7 +60,7 @@ public class RemoteFeedDaoImpl implements RemoteFeedDao {
 				message.setUrl(entry.getLink());
 				message.setGuid(entry.getUri());
 				messages.add(message);
-			}
+			});
 
 			messageDao.batchInsert(messages);
 
@@ -83,7 +81,6 @@ public class RemoteFeedDaoImpl implements RemoteFeedDao {
 			final SyndFeed feed = input.build(new XmlReader(stream));
 			return feed.getTitle();
 		} catch (IllegalArgumentException | FeedException | IOException e) {
-			LOGGER.error("Error getting feed name", e);
 			throw new FeedUrlException("Error getting feed name", e);
 		}
 

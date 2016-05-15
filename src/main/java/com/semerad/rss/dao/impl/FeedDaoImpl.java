@@ -46,7 +46,7 @@ public class FeedDaoImpl implements FeedDao {
 	@Override
 	public void delete(final int id) {
 		final Feed feed = (Feed) sessionFactory.getCurrentSession().load(Feed.class, id);
-		if (null != feed) {
+		if (feed != null) {
 			sessionFactory.getCurrentSession().delete(feed);
 		}
 	}
