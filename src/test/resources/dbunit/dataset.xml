@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+  
+  <!-- Accounts -->
+  <ACCOUNT ID="1" USERNAME="miro" PASSWORD="pass1" />
+  <ACCOUNT ID="2" USERNAME="fero" PASSWORD="pass2" />
+  <ACCOUNT ID="3" USERNAME="duro" PASSWORD="pass3" />
+  <ACCOUNT ID="4" USERNAME="jano" PASSWORD="pass4" />
+  
+  <!-- Feeds -->
+  <FEED ID="1" URL="url1" NAME="feed1" ACCOUNT_ID="1" />
+  <FEED ID="2" URL="url2" NAME="feed2" ACCOUNT_ID="2" />
+  <FEED ID="3" URL="url3" NAME="feed3" ACCOUNT_ID="3" />
+  <FEED ID="4" URL="url4" NAME="feed4" ACCOUNT_ID="4" />
+  <FEED ID="5" URL="url5" NAME="feed5" ACCOUNT_ID="1" />
+  <FEED ID="6" URL="url6" NAME="feed6" ACCOUNT_ID="2" />
+  <FEED ID="7" URL="url7" NAME="feed7" ACCOUNT_ID="3" />
+  <FEED ID="8" URL="url8" NAME="feed8" ACCOUNT_ID="4" />
+  
+  <!-- Messages -->
+  <MESSAGE MESSAGE_ID="1" URL="messageUrl1" TITLE="title1" AUTHOR="author1" SUMMARY="summary1" IS_READ="0" IS_FAVOURITE="0" PUBLISH_DATE="2016-05-13 19:42:51" GUID="guid1" FEED_ID="1" />
+  <MESSAGE MESSAGE_ID="2" URL="messageUrl2" TITLE="title2" AUTHOR="author1" SUMMARY="summary2" IS_READ="0" IS_FAVOURITE="0" PUBLISH_DATE="2016-05-13 19:42:52" GUID="guid2" FEED_ID="1" />
+  <MESSAGE MESSAGE_ID="3" URL="messageUrl3" TITLE="title3" AUTHOR="author2" SUMMARY="summary3" IS_READ="0" IS_FAVOURITE="0" PUBLISH_DATE="2016-05-13 19:42:53" GUID="guid3" FEED_ID="1" />
+  <MESSAGE MESSAGE_ID="4" URL="messageUrl4" TITLE="title4" AUTHOR="author2" SUMMARY="summary4" IS_READ="0" IS_FAVOURITE="1" PUBLISH_DATE="2016-05-13 19:42:54" GUID="guid4" FEED_ID="2" />
+  <MESSAGE MESSAGE_ID="5" URL="messageUrl5" TITLE="title5" AUTHOR="author3" SUMMARY="summary5" IS_READ="1" IS_FAVOURITE="1" PUBLISH_DATE="2016-05-13 19:42:55" GUID="guid5" FEED_ID="2" />
+  <MESSAGE MESSAGE_ID="6" URL="messageUrl6" TITLE="title6" AUTHOR="author3" SUMMARY="summary6" IS_READ="1" IS_FAVOURITE="0" PUBLISH_DATE="2016-05-13 19:42:56" GUID="guid6" FEED_ID="2" />
+  
+</dataset>

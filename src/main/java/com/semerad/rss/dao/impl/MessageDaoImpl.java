@@ -37,7 +37,6 @@ public class MessageDaoImpl implements MessageDao {
 	@Override
 	public List<Message> list(final Feed feed, final Pagination paging, final String textSearch) {
 		if (feed == null) {
-			// if feed is unspecified return empty list
 			return Collections.emptyList();
 		}
 		final Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Message.class);
