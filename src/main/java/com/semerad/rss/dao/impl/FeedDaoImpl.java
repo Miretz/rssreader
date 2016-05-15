@@ -24,7 +24,6 @@ public class FeedDaoImpl implements FeedDao {
 	@Override
 	public List<Feed> list(final Account account) {
 		if (account == null) {
-			// if account is unspecified return empty list
 			return Collections.emptyList();
 		}
 		return sessionFactory.getCurrentSession().createCriteria(Feed.class).add(Restrictions.eq("account", account))
@@ -40,12 +39,12 @@ public class FeedDaoImpl implements FeedDao {
 	public Feed update(final Feed feed) {
 		final int id = feed.getId();
 		sessionFactory.getCurrentSession().saveOrUpdate(feed);
-		return (Feed) sessionFactory.getCurrentSession().load(Feed.class, id);
+		return sessionFactory.getCurrentSession().load(Feed.class, id);
 	}
 
 	@Override
 	public void delete(final int id) {
-		final Feed feed = (Feed) sessionFactory.getCurrentSession().load(Feed.class, id);
+		final Feed feed = sessionFactory.getCurrentSession().load(Feed.class, id);
 		if (feed != null) {
 			sessionFactory.getCurrentSession().delete(feed);
 		}

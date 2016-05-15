@@ -2,38 +2,53 @@ package com.semerad.rss;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.wicket.Application;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.authroles.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.authroles.authentication.AuthenticatedWebSession;
-import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.StatelessForm;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.PropertyListView;
+import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
-import org.apache.wicket.util.string.Strings;
 
+import com.semerad.rss.guicomponents.DashboardDataProvider;
+import com.semerad.rss.guicomponents.DashboardList;
 import com.semerad.rss.guimodels.MessageGui;
 import com.semerad.rss.model.Account;
+import com.semerad.rss.model.Feed;
 import com.semerad.rss.model.Message;
+import com.semerad.rss.service.FeedService;
 import com.semerad.rss.service.MessageService;
 
 public class DashboardPage extends WebPage {
 
 	private static final long serialVersionUID = -2393491973831377023L;
 
+	public static final String ALL_FEEDS = "All";
+
 	@SpringBean
-	private MessageService messageService;
+	protected MessageService messageService;
 
-	private final List<MessageGui> messages = new ArrayList<>();
+	@SpringBean
+	protected FeedService feedService;
 
-	private String searchField;
+	protected final List<MessageGui> messages = new ArrayList<>();
+	protected String searchField;
+
+	protected DashboardList messagesList;
+	protected DashboardDataProvider dataProvider;
+	protected String currentFeed = ALL_FEEDS;
 
 	@Override
 	protected void onConfigure() {
@@ -53,7 +68,16 @@ public class DashboardPage extends WebPage {
 		// get current logged in account
 		final Account currentAccount = ((BasicAuthenticationSession) AuthenticatedWebSession.get()).getCurrentAccount();
 
+		// load messages from DB
 		loadMessages(currentAccount);
+
+		// display data with paging
+		dataProvider = new DashboardDataProvider(currentAccount, null, messageService);
+		messagesList = new DashboardList("messages", dataProvider, 10);
+		messagesList.setOutputMarkupId(true);
+		add(messagesList);
+		final PagingNavigator pager = new PagingNavigator("navigation", messagesList);
+		add(pager);
 
 		// Add synchronize link
 		add(new Link("synchronize") {
@@ -72,16 +96,47 @@ public class DashboardPage extends WebPage {
 			}
 		});
 
-		// add the list of feed messages
-		add(new PropertyListView<MessageGui>("messages", messages) {
+		// page sizes
+		add(new Link("pageSize10") {
 			@Override
-			public void populateItem(final ListItem<MessageGui> listItem) {
-				populateListItem(listItem);
+			public void onClick() {
+				messagesList.setItemsPerPage(10);
 			}
-		}).setVersioned(false);
+		});
+
+		add(new Link("pageSize20") {
+			@Override
+			public void onClick() {
+				messagesList.setItemsPerPage(20);
+			}
+		});
+
+		add(new Link("pageSize50") {
+			@Override
+			public void onClick() {
+				messagesList.setItemsPerPage(50);
+			}
+		});
 
 		// add the search form
-		add(createSearchForm(currentAccount));
+		add(createSearchForm());
+
+		// add the feed filter
+		add(createFeedFilter(currentAccount));
+
+		// mark as read links
+		add(new Link("markAsRead") {
+			@Override
+			public void onClick() {
+				messagesList.changeSelectionReadStatus(true);
+			}
+		});
+		add(new Link("markAsUnread") {
+			@Override
+			public void onClick() {
+				messagesList.changeSelectionReadStatus(false);
+			}
+		});
 
 		// Add logout link
 		add(new Link("logOut") {
@@ -94,66 +149,66 @@ public class DashboardPage extends WebPage {
 		});
 	}
 
-	protected void populateListItem(final ListItem<MessageGui> listItem) {
-		final Label read = new Label("exclamation", "");
-		if (listItem.getModelObject().isRead()) {
-			read.add(new AttributeAppender("style", "display: none;", " "));
-		}
-		listItem.add(read);
-
-		listItem.add(new Label("publishDate"));
-		listItem.add(new ExternalLink("messageUrl", listItem.getModelObject().getUrl()).add(new Label("title")));
-		listItem.add(new Label("summary").setEscapeModelStrings(false));
-
-		final Label favourite = new Label("heart", "");
-		if (listItem.getModelObject().isFavourite()) {
-			favourite.add(new AttributeAppender("style", "color: red;", " "));
-		} else {
-			favourite.add(new AttributeAppender("style", "color: #ddd;", " "));
-		}
-		listItem.add(favourite);
-	}
-
 	protected void loadMessages(final Account currentAccount) {
-
 		messages.clear();
-
 		// Load messages from Database
-		final int size = messageService.messageCount(currentAccount);
-		final List<Message> messagesFromDb = messageService.list(currentAccount, 0, size);
-
+		final List<Message> messagesFromDb = messageService.list(currentAccount, null, null);
 		messagesFromDb.forEach(e -> messages.add(new MessageGui(e)));
-
 	}
 
 	protected void synchronizeFeeds(final Account currentAccount) {
-
 		// synchronize feeds from the web
 		messageService.synchronizeFeeds(currentAccount);
-
 		loadMessages(currentAccount);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes", "serial" })
-	private StatelessForm createSearchForm(final Account currentAccount) {
-		final StatelessForm signupForm = new StatelessForm("searchForm") {
+	private StatelessForm createSearchForm() {
+		final StatelessForm searchForm = new StatelessForm("searchForm") {
 			@Override
 			protected void onSubmit() {
-				if (Strings.isEmpty(searchField)) {
-					loadMessages(currentAccount);
-					return;
-				}
-
-				final List<Message> searchResults = messageService.search(currentAccount, 0, 50, searchField);
-				messages.clear();
-				searchResults.forEach(e -> messages.add(new MessageGui(e)));
-
+				dataProvider.setTextSearch(searchField);
+				setResponsePage(getPage());
 			}
 
 		};
-		signupForm.setDefaultModel(new CompoundPropertyModel(this));
-		signupForm.add(new TextField("searchField"));
-		return signupForm;
+		searchForm.setDefaultModel(new CompoundPropertyModel(this));
+		searchForm.add(new TextField("searchField"));
+		return searchForm;
+	}
+
+	protected FormComponent<String> createFeedFilter(final Account currentAccount) {
+
+		final List<Feed> feeds = feedService.list(currentAccount);
+		final List<String> feedNames = feeds.stream().map(e -> e.getName()).collect(Collectors.toList());
+
+		feedNames.add(ALL_FEEDS);
+
+		final DropDownChoice<String> choice = new DropDownChoice<>("feedFilter",
+				new PropertyModel<String>(this, "currentFeed"), feedNames);
+
+		choice.add(new AjaxFormComponentUpdatingBehavior("change") {
+
+			private static final long serialVersionUID = -9194907488877178226L;
+
+			@SuppressWarnings("unchecked")
+			@Override
+			protected void onUpdate(final AjaxRequestTarget target) {
+				final String selectedName = ((DropDownChoice<String>) getComponent()).getModelObject();
+				final Optional<Feed> maybeFeed = feeds.stream()
+						.filter(e -> StringUtils.equals(e.getName(), selectedName)).findFirst();
+				if (maybeFeed.isPresent()) {
+					dataProvider.setFeed(maybeFeed.get());
+				} else {
+					dataProvider.setFeed(null);
+					currentFeed = ALL_FEEDS;
+				}
+				setResponsePage(getPage());
+			}
+		});
+
+		return choice;
+
 	}
 
 }

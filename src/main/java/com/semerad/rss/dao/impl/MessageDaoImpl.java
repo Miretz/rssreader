@@ -1,10 +1,12 @@
 package com.semerad.rss.dao.impl;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
@@ -14,13 +16,12 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.exception.ConstraintViolationException;
-import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.semerad.rss.dao.MessageDao;
+import com.semerad.rss.guimodels.Pagination;
 import com.semerad.rss.model.Account;
 import com.semerad.rss.model.Feed;
 import com.semerad.rss.model.Message;
@@ -29,69 +30,61 @@ import com.semerad.rss.model.Message;
 @Repository("messageDao")
 public class MessageDaoImpl implements MessageDao {
 
-	private static final Logger LOGGER = Logger.getLogger(MessageDaoImpl.class);
-
 	@Autowired
 	private SessionFactory sessionFactory;
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Message> list(final Feed feed, final int firstResult, final int pageSize) {
+	public List<Message> list(final Feed feed, final Pagination paging, final String textSearch) {
 		if (feed == null) {
 			// if feed is unspecified return empty list
 			return Collections.emptyList();
 		}
 		final Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Message.class);
 		criteria.add(Restrictions.eq("feed", feed));
-		criteria.setFirstResult(firstResult);
-		criteria.setMaxResults(pageSize);
+
+		if (paging != null) {
+			criteria.setFirstResult(paging.getIndex());
+			criteria.setMaxResults(paging.getPageSize());
+		}
+
+		if (StringUtils.isNotBlank(textSearch)) {
+			addTextSearchCriteria(textSearch, criteria);
+		}
+
 		criteria.addOrder(Order.desc("publishDate"));
 		return criteria.list();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<Message> list(final Account account, final int firstResult, final int pageSize) {
+	public List<Message> list(final Account account, final Pagination paging, final String textSearch) {
 		if (account == null) {
 			// if feed is unspecified return empty list
 			return Collections.emptyList();
 		}
-		final Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Feed.class);
-		criteria.add(Restrictions.eq("account", account));
-		criteria.setFirstResult(firstResult);
-		criteria.setMaxResults(pageSize);
+		final Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Message.class);
+		criteria.createAlias("feed", "f");
+		criteria.add(Restrictions.eq("f.account", account));
 
-		final List<Feed> feeds = criteria.list();
-		final List<Message> messages = new ArrayList<>();
+		if (paging != null) {
+			criteria.setFirstResult(paging.getIndex());
+			criteria.setMaxResults(paging.getPageSize());
+		}
 
-		feeds.forEach(e -> messages.addAll(e.getMessages()));
+		if (StringUtils.isNotBlank(textSearch)) {
+			addTextSearchCriteria(textSearch, criteria);
+		}
 
-		messages.sort((p1, p2) -> p2.getPublishDate().compareTo(p1.getPublishDate()));
+		criteria.addOrder(Order.desc("publishDate"));
 
-		return messages;
+		return criteria.list();
 
 	}
 
 	@Override
 	public void create(final Message message) {
 		sessionFactory.getCurrentSession().saveOrUpdate(message);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<Message> search(final Feed feed, final int firstResult, final int pageSize, final String value) {
-		if (feed == null) {
-			// if feed is unspecified return messages from all feeds
-			return Collections.emptyList();
-		}
-		final Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Message.class);
-		criteria.add(Restrictions.eq("feed", feed));
-		criteria.setFirstResult(firstResult);
-		criteria.setMaxResults(pageSize);
-
-		addTextSearchCriteria(value, criteria);
-
-		return criteria.list();
 	}
 
 	protected void addTextSearchCriteria(final String value, final Criteria criteria) {
@@ -102,67 +95,73 @@ public class MessageDaoImpl implements MessageDao {
 	}
 
 	@Override
-	public int messageCount(final Feed feed) {
+	public Long messageCount(final Feed feed) {
 		if (feed == null) {
 			// if feed is unspecified return empty list
-			return 0;
+			return 0L;
 		}
 		final Criteria criteriaCount = sessionFactory.getCurrentSession().createCriteria(Message.class);
 		criteriaCount.add(Restrictions.eq("feed", feed));
 		criteriaCount.setProjection(Projections.rowCount());
-		return (Integer) criteriaCount.uniqueResult();
+		return (Long) criteriaCount.uniqueResult();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public int messageCount(final Account account) {
+	public Long messageCount(final Account account) {
 		if (account == null) {
 			// if account is unspecified return empty list
-			return 0;
+			return 0L;
 		}
 		final Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Feed.class);
 		criteria.add(Restrictions.eq("account", account));
 		final List<Feed> feeds = criteria.list();
 
-		return feeds.stream().mapToInt(e -> e.getMessages().size()).sum();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<Message> search(final Account account, final int firstResult, final int pageSize, final String value) {
-		if (account == null) {
-			// if account is unspecified return empty list
-			return Collections.emptyList();
-		}
-		final Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Message.class);
-		criteria.createAlias("feed", "f");
-		criteria.add(Restrictions.eq("f.account", account));
-		criteria.setFirstResult(firstResult);
-		criteria.setMaxResults(pageSize);
-
-		addTextSearchCriteria(value, criteria);
-
-		return criteria.list();
+		return feeds.stream().mapToLong(e -> e.getMessages().size()).sum();
 	}
 
 	@Override
 	public void batchInsert(final List<Message> messages) {
-
 		final StatelessSession session = sessionFactory.openStatelessSession();
+		final Transaction tx = session.beginTransaction();
+		messages.forEach(session::insert);
+		tx.commit();
+		session.close();
+	}
 
-		messages.forEach(m -> {
-			final Transaction tx = session.beginTransaction();
-			try {
-				tx.setTimeout(5);
-				session.insert(m);
-				tx.commit();
-			} catch (final ConstraintViolationException e) {
-				// Ignore
-				tx.rollback();
-				LOGGER.warn("Ignoring duplicate: " + m);
-			}
-		});
+	@Override
+	public Message get(final int id) {
+		return sessionFactory.getCurrentSession().load(Message.class, id);
+	}
 
+	@Override
+	public Message update(final Message message) {
+		final int id = message.getId();
+		sessionFactory.getCurrentSession().saveOrUpdate(message);
+		return sessionFactory.getCurrentSession().load(Message.class, id);
+	}
+
+	@Override
+	public void setRead(final Set<Integer> ids, final boolean value) {
+		final Session session = sessionFactory.openSession();
+		final Transaction tx = session.beginTransaction();
+		for (final Integer id : ids) {
+			final Message m = session.load(Message.class, id);
+			m.setRead(value);
+			session.update(m);
+		}
+		tx.commit();
+		session.close();
+	}
+
+	@Override
+	public void setFavourite(final int id, final boolean value) {
+		final Session session = sessionFactory.openSession();
+		final Transaction tx = session.beginTransaction();
+		final Message m = session.load(Message.class, id);
+		m.setFavourite(value);
+		session.update(m);
+		tx.commit();
 		session.close();
 	}
 }

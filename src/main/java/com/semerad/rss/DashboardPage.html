@@ -36,29 +36,52 @@
 			</div>
 		<div class="col_12 central" style="margin-top: 10px;">
 		
+			
 			<hr class="alt2" />
 		
-			<div class="right">
+			<div class="col_6 left">
+		
+			<h4 style="color: #339; margin-bottom: 10px;">
+			Feed Messages
+			</h4>
+			<div class="select-style">
+			<select wicket:id="feedFilter">
+	        <option>Feed1</option>
+	        <option>Feed2</option>
+	        </select>
+	        </div>
+	        
+	        </div>
+	        
+	         <div class="col_6 right">
 			<form action="" wicket:id="searchForm">
 			 	<input id="searchField" wicket:id="searchField" type="text" placeholder="Search..." />
 				<button class="medium">
 						<i class="fa fa-search"></i> Search
 				</button>
 			</form>
-			</div>		
-		
+			</div>	
 		
 			<hr class="alt2" />
 			
-			<h4 style="color: #339; margin-bottom: 10px;">
+			<div class="col_6 left">
 			<a class="button orange fa fa-download" wicket:id="synchronize"></a>
 			<a class="button fa fa-refresh" wicket:id="refresh"></a>
-			Feed Messages
-			</h4>
-						
-			<table style="margin-top: 20px;">
+			<a class="button" wicket:id="markAsRead">Mark as read</a>
+			<a class="button" wicket:id="markAsUnread">Mark as unread</a>
+			</div>
+			
+			<div class="col_6 right">
+			<div wicket:id="navigation"></div>
+			Page Size:
+			<a wicket:id="pageSize10">10</a>
+			<a wicket:id="pageSize20">20</a>
+			<a wicket:id="pageSize50">50</a>
+			</div>
+			
+			<table style="margin-top: 20px;" class="dataview">
 			<thead><tr>
-				<th>Read</th>
+				<th>Select</th>
 				<th>Publish Date</th>
 				<th>Title</th>
 				<th>Summary</th>
@@ -66,13 +89,14 @@
 			</tr></thead>
 			<tbody>
 			<tr wicket:id="messages">
-				<td><span wicket:id="exclamation" class="fa fa-2x fa-exclamation"></span></td>
+				<td><input type="checkbox" wicket:id="selected" /></td>
 				<td wicket:id="publishDate"></td>
 				<td>
+					<span wicket:id="exclamation" class="fa fa-exclamation"></span>
 					<a wicket:id="messageUrl"><span wicket:id="title"></span></a>
 				</td>
 				<td wicket:id="summary"></td>
-				<td><span wicket:id="heart" class="fa fa-2x fa-heart"></span></td>
+				<td><span wicket:id="like" class="fa fa-2x fa-heart"></span></td>
 			</tr>
 			</tbody>
 			</table>
