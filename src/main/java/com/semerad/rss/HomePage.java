@@ -72,16 +72,22 @@ public class HomePage extends WebPage {
 	}
 
 	protected void onSignupSubmit() {
-		if (StringUtils.isNotEmpty(signupUsername) && StringUtils.isNotEmpty(signupPassword)) {
-			accountService.create(signupUsername, signupPassword);
-			signInAndContinue(signupUsername, signupPassword);
+		if (StringUtils.isEmpty(signupUsername) || StringUtils.isEmpty(signupPassword)) {
+			return;
 		}
+		if (accountService.create(signupUsername, signupPassword)) {
+			signInAndContinue(signupUsername, signupPassword);
+		} else {
+			error("User already exists");
+		}
+
 	}
 
 	protected void onLoginSubmit() {
-		if (StringUtils.isNotEmpty(loginUsername)) {
-			signInAndContinue(loginUsername, loginPassword);
+		if (StringUtils.isEmpty(loginUsername) || StringUtils.isEmpty(loginPassword)) {
+			return;
 		}
+		signInAndContinue(loginUsername, loginPassword);
 	}
 
 	protected void signInAndContinue(final String user, final String pass) {
@@ -89,7 +95,7 @@ public class HomePage extends WebPage {
 		if (authResult) {
 			continueToOriginalDestination();
 		} else {
-			error("Error during sign up");
+			error("Wrong username or password");
 		}
 	}
 

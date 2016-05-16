@@ -3,6 +3,7 @@ package com.semerad.rss.service.impl;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,16 +19,22 @@ public class AccountServiceImpl implements AccountService {
 	private AccountDao accountDao;
 
 	@Override
-	public void create(final String username, final String password) {
+	public boolean create(final String username, final String password) {
 
 		// hash the password into DB
 		final String hashedPassword = PasswordHashUtil.createHash(password);
+
+		final List<Account> accountsFound = accountDao.findByUsername(username);
+
+		if (CollectionUtils.isNotEmpty(accountsFound)) {
+			return false;
+		}
 
 		final Account account = new Account();
 		account.setUsername(username);
 		account.setPassword(hashedPassword);
 		accountDao.create(account);
-
+		return true;
 	}
 
 	@Override
