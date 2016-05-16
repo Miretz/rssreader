@@ -3,6 +3,7 @@ package com.semerad.rss.dao.impl;
 import java.util.Collections;
 import java.util.List;
 
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,9 @@ public class FeedDaoImpl implements FeedDao {
 		if (account == null) {
 			return Collections.emptyList();
 		}
-		return sessionFactory.getCurrentSession().createCriteria(Feed.class).add(Restrictions.eq("account", account))
-				.list();
+		final Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Feed.class);
+		criteria.add(Restrictions.eq("account", account));
+		return criteria.list();
 	}
 
 	@Override

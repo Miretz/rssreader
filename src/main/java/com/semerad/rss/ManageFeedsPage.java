@@ -28,9 +28,8 @@ import com.semerad.rss.model.Account;
 import com.semerad.rss.model.Feed;
 import com.semerad.rss.service.FeedService;
 
+@SuppressWarnings({ "serial", "unchecked" })
 public class ManageFeedsPage extends WebPage {
-
-	private static final long serialVersionUID = -2393491973831377023L;
 
 	private static final Logger LOGGER = Logger.getLogger(ManageFeedsPage.class);
 
@@ -54,7 +53,6 @@ public class ManageFeedsPage extends WebPage {
 		}
 	}
 
-	@SuppressWarnings({ "serial" })
 	@Override
 	protected void onInitialize() {
 		super.onInitialize();
@@ -83,8 +81,6 @@ public class ManageFeedsPage extends WebPage {
 		listItem.add(new Label("url"));
 		listItem.add(new Link<String>("delete") {
 
-			private static final long serialVersionUID = -6291578969881199688L;
-
 			@Override
 			public void onClick() {
 				feedService.delete(listItem.getModelObject().getId());
@@ -95,8 +91,6 @@ public class ManageFeedsPage extends WebPage {
 	}
 
 	public final class FeedForm extends Form<ValueMap> {
-
-		private static final long serialVersionUID = -3856831508185113893L;
 
 		public FeedForm(final String id) {
 			super(id, new CompoundPropertyModel<ValueMap>(new ValueMap()));
@@ -114,8 +108,6 @@ public class ManageFeedsPage extends WebPage {
 			nameField.setType(String.class);
 
 			nameField.add(new AjaxFormComponentUpdatingBehavior("focus") {
-
-				private static final long serialVersionUID = 4216992291176427577L;
 
 				@Override
 				protected void onUpdate(final AjaxRequestTarget target) {
@@ -136,8 +128,6 @@ public class ManageFeedsPage extends WebPage {
 
 			nameField.add(new AjaxFormComponentUpdatingBehavior("onblur") {
 
-				private static final long serialVersionUID = -6906103042256515329L;
-
 				@Override
 				protected void onUpdate(final AjaxRequestTarget target) {
 					nameInFocus = false;
@@ -152,9 +142,6 @@ public class ManageFeedsPage extends WebPage {
 			urlField.setType(String.class);
 			urlField.add(new AjaxFormComponentUpdatingBehavior("blur") {
 
-				private static final long serialVersionUID = 8452269089246818867L;
-
-				@SuppressWarnings("unchecked")
 				@Override
 				protected void onUpdate(final AjaxRequestTarget arg0) {
 					urlFieldValue = ((TextField<String>) getComponent()).getModelObject();

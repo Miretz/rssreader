@@ -144,11 +144,11 @@ public class MessageDaoImpl implements MessageDao {
 	public void setRead(final Set<Integer> ids, final boolean value) {
 		final Session session = sessionFactory.openSession();
 		final Transaction tx = session.beginTransaction();
-		for (final Integer id : ids) {
+		ids.forEach(id -> {
 			final Message m = session.load(Message.class, id);
 			m.setRead(value);
 			session.update(m);
-		}
+		});
 		tx.commit();
 		session.close();
 	}

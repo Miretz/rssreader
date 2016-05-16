@@ -1,5 +1,6 @@
 package com.semerad.rss;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.wicket.authroles.authentication.AuthenticatedWebSession;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.form.PasswordTextField;
@@ -9,13 +10,11 @@ import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.spring.injection.annot.SpringBean;
-import org.apache.wicket.util.string.Strings;
 
 import com.semerad.rss.service.AccountService;
 
+@SuppressWarnings({ "rawtypes", "unchecked", "serial" })
 public class HomePage extends WebPage {
-
-	private static final long serialVersionUID = 1L;
 
 	@SpringBean
 	private AccountService accountService;
@@ -45,27 +44,12 @@ public class HomePage extends WebPage {
 		add(new FeedbackPanel("signupFeedback"));
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes", "serial" })
 	private StatelessForm getSignUpForm() {
 		final StatelessForm signupForm = new StatelessForm("signupForm") {
 			@Override
 			protected void onSubmit() {
-				if (Strings.isEmpty(signupUsername) || Strings.isEmpty(signupPassword)) {
-					return;
-				}
-
-				// create a new user account
-				accountService.create(signupUsername, signupPassword);
-
-				final boolean authResult = AuthenticatedWebSession.get().signIn(signupUsername, signupPassword);
-				if (authResult) {
-					continueToOriginalDestination();
-				} else {
-					error("Error during sign up");
-				}
-
+				onSignupSubmit();
 			}
-
 		};
 		signupForm.setDefaultModel(new CompoundPropertyModel(this));
 		signupForm.add(new TextField("signupUsername"));
@@ -73,26 +57,40 @@ public class HomePage extends WebPage {
 		return signupForm;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked", "serial" })
 	private StatelessForm getLoginForm() {
 		final StatelessForm loginForm = new StatelessForm("loginForm") {
 			@Override
 			protected void onSubmit() {
-				if (Strings.isEmpty(loginUsername)) {
-					return;
-				}
-
-				final boolean authResult = AuthenticatedWebSession.get().signIn(loginUsername, loginPassword);
-				if (authResult) {
-					continueToOriginalDestination();
-				} else {
-					error("Wrong username or password");
-				}
+				onLoginSubmit();
 			}
+
 		};
 		loginForm.setDefaultModel(new CompoundPropertyModel(this));
 		loginForm.add(new TextField("loginUsername"));
 		loginForm.add(new PasswordTextField("loginPassword"));
 		return loginForm;
 	}
+
+	protected void onSignupSubmit() {
+		if (StringUtils.isNotEmpty(signupUsername) && StringUtils.isNotEmpty(signupPassword)) {
+			accountService.create(signupUsername, signupPassword);
+			signInAndContinue(signupUsername, signupPassword);
+		}
+	}
+
+	protected void onLoginSubmit() {
+		if (StringUtils.isNotEmpty(loginUsername)) {
+			signInAndContinue(loginUsername, loginPassword);
+		}
+	}
+
+	protected void signInAndContinue(final String user, final String pass) {
+		final boolean authResult = AuthenticatedWebSession.get().signIn(user, pass);
+		if (authResult) {
+			continueToOriginalDestination();
+		} else {
+			error("Error during sign up");
+		}
+	}
+
 }

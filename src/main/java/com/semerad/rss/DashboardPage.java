@@ -31,9 +31,8 @@ import com.semerad.rss.model.Message;
 import com.semerad.rss.service.FeedService;
 import com.semerad.rss.service.MessageService;
 
+@SuppressWarnings({ "unchecked", "rawtypes", "serial" })
 public class DashboardPage extends WebPage {
-
-	private static final long serialVersionUID = -2393491973831377023L;
 
 	public static final String ALL_FEEDS = "All";
 
@@ -60,7 +59,6 @@ public class DashboardPage extends WebPage {
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "serial" })
 	@Override
 	protected void onInitialize() {
 		super.onInitialize();
@@ -79,6 +77,79 @@ public class DashboardPage extends WebPage {
 		final PagingNavigator pager = new PagingNavigator("navigation", messagesList);
 		add(pager);
 
+		addButtons(currentAccount);
+
+		// add the search form
+		add(createSearchForm());
+
+		// add the feed filter
+		add(createFeedFilter(currentAccount));
+
+	}
+
+	protected void loadMessages(final Account currentAccount) {
+		messages.clear();
+		// Load messages from Database
+		final List<Message> messagesFromDb = messageService.list(currentAccount, null, null);
+		messagesFromDb.forEach(e -> messages.add(new MessageGui(e)));
+	}
+
+	protected void synchronizeFeeds(final Account currentAccount) {
+		// synchronize feeds from the web
+		messageService.synchronizeFeeds(currentAccount);
+		loadMessages(currentAccount);
+	}
+
+	private StatelessForm createSearchForm() {
+		final StatelessForm searchForm = new StatelessForm("searchForm") {
+			@Override
+			protected void onSubmit() {
+				dataProvider.setTextSearch(searchField);
+				setResponsePage(getPage());
+			}
+
+		};
+		searchForm.setDefaultModel(new CompoundPropertyModel(this));
+		searchForm.add(new TextField("searchField"));
+		return searchForm;
+	}
+
+	protected FormComponent<String> createFeedFilter(final Account currentAccount) {
+
+		final List<Feed> feeds = feedService.list(currentAccount);
+		final List<String> feedNames = feeds.stream().map(e -> e.getName()).collect(Collectors.toList());
+
+		feedNames.add(ALL_FEEDS);
+
+		final DropDownChoice<String> choice = new DropDownChoice<>("feedFilter",
+				new PropertyModel<String>(this, "currentFeed"), feedNames);
+
+		choice.add(new AjaxFormComponentUpdatingBehavior("change") {
+
+			@Override
+			protected void onUpdate(final AjaxRequestTarget target) {
+				final String selectedName = ((DropDownChoice<String>) getComponent()).getModelObject();
+				onFeedFilterChange(feeds, selectedName);
+			}
+		});
+
+		return choice;
+
+	}
+
+	protected void onFeedFilterChange(final List<Feed> feeds, final String selectedName) {
+		final Optional<Feed> maybeFeed = feeds.stream().filter(e -> StringUtils.equals(e.getName(), selectedName))
+				.findFirst();
+		if (maybeFeed.isPresent()) {
+			dataProvider.setFeed(maybeFeed.get());
+		} else {
+			dataProvider.setFeed(null);
+			currentFeed = ALL_FEEDS;
+		}
+		setResponsePage(getPage());
+	}
+
+	protected void addButtons(final Account currentAccount) {
 		// Add synchronize link
 		add(new Link("synchronize") {
 
@@ -118,12 +189,6 @@ public class DashboardPage extends WebPage {
 			}
 		});
 
-		// add the search form
-		add(createSearchForm());
-
-		// add the feed filter
-		add(createFeedFilter(currentAccount));
-
 		// mark as read links
 		add(new Link("markAsRead") {
 			@Override
@@ -147,68 +212,6 @@ public class DashboardPage extends WebPage {
 				setResponsePage(getApplication().getHomePage());
 			}
 		});
-	}
-
-	protected void loadMessages(final Account currentAccount) {
-		messages.clear();
-		// Load messages from Database
-		final List<Message> messagesFromDb = messageService.list(currentAccount, null, null);
-		messagesFromDb.forEach(e -> messages.add(new MessageGui(e)));
-	}
-
-	protected void synchronizeFeeds(final Account currentAccount) {
-		// synchronize feeds from the web
-		messageService.synchronizeFeeds(currentAccount);
-		loadMessages(currentAccount);
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes", "serial" })
-	private StatelessForm createSearchForm() {
-		final StatelessForm searchForm = new StatelessForm("searchForm") {
-			@Override
-			protected void onSubmit() {
-				dataProvider.setTextSearch(searchField);
-				setResponsePage(getPage());
-			}
-
-		};
-		searchForm.setDefaultModel(new CompoundPropertyModel(this));
-		searchForm.add(new TextField("searchField"));
-		return searchForm;
-	}
-
-	protected FormComponent<String> createFeedFilter(final Account currentAccount) {
-
-		final List<Feed> feeds = feedService.list(currentAccount);
-		final List<String> feedNames = feeds.stream().map(e -> e.getName()).collect(Collectors.toList());
-
-		feedNames.add(ALL_FEEDS);
-
-		final DropDownChoice<String> choice = new DropDownChoice<>("feedFilter",
-				new PropertyModel<String>(this, "currentFeed"), feedNames);
-
-		choice.add(new AjaxFormComponentUpdatingBehavior("change") {
-
-			private static final long serialVersionUID = -9194907488877178226L;
-
-			@SuppressWarnings("unchecked")
-			@Override
-			protected void onUpdate(final AjaxRequestTarget target) {
-				final String selectedName = ((DropDownChoice<String>) getComponent()).getModelObject();
-				final Optional<Feed> maybeFeed = feeds.stream()
-						.filter(e -> StringUtils.equals(e.getName(), selectedName)).findFirst();
-				if (maybeFeed.isPresent()) {
-					dataProvider.setFeed(maybeFeed.get());
-				} else {
-					dataProvider.setFeed(null);
-					currentFeed = ALL_FEEDS;
-				}
-				setResponsePage(getPage());
-			}
-		});
-
-		return choice;
-
 	}
 
 }
