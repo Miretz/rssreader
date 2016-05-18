@@ -25,7 +25,7 @@ public class AccountServiceImplTest {
 	public void testLogin() throws Exception {
 
 		final Account account = Mockito.mock(Account.class);
-		final String hashedPassword = "1000:eafbbd14d61809d1661bac36bcc5321ab499a7bcef45d848:b8796da399b9cdca38a1d453c61814b15c202bd2fd584804";
+		final String hashedPassword = "$2a$12$uKpRbUMFnlF.cAxXBL7FkOARqvLlXgvrOGkSEVr2KKGK6mpdL6SUq";
 		Mockito.when(account.getPassword()).thenReturn(hashedPassword);
 
 		final String username = "user";
@@ -42,7 +42,7 @@ public class AccountServiceImplTest {
 	public void testLoginFailure() throws Exception {
 
 		final Account account = Mockito.mock(Account.class);
-		final String hashedPassword = "1000:eafbbd14d61809d1661bac36bcc5321ab499a7bcef45d848:b8796da399b9cdca38a1d453c61814b15c202bd2fd584833";
+		final String hashedPassword = "$2a$12$uKpRbUMFnlF.cAxXBL7FkOARqvLlXgvrOGkSEVr2KKGK623131";
 		Mockito.when(account.getPassword()).thenReturn(hashedPassword);
 
 		final String username = "user";

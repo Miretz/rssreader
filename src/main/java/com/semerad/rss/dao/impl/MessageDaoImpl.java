@@ -26,6 +26,7 @@ import com.semerad.rss.model.Account;
 import com.semerad.rss.model.Feed;
 import com.semerad.rss.model.Message;
 
+@SuppressWarnings("unchecked")
 @Transactional
 @Repository("messageDao")
 public class MessageDaoImpl implements MessageDao {
@@ -33,7 +34,6 @@ public class MessageDaoImpl implements MessageDao {
 	@Autowired
 	private SessionFactory sessionFactory;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<Message> list(final Feed feed, final Pagination paging, final String textSearch) {
 		if (feed == null) {
@@ -55,7 +55,6 @@ public class MessageDaoImpl implements MessageDao {
 		return criteria.list();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<Message> list(final Account account, final Pagination paging, final String textSearch) {
 		if (account == null) {
@@ -105,7 +104,6 @@ public class MessageDaoImpl implements MessageDao {
 		return (Long) criteriaCount.uniqueResult();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Long messageCount(final Account account) {
 		if (account == null) {
