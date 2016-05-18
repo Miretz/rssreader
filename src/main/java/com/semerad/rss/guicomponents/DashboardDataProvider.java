@@ -1,8 +1,8 @@
 package com.semerad.rss.guicomponents;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.wicket.markup.repeater.data.IDataProvider;
 import org.apache.wicket.model.IModel;
@@ -55,8 +55,8 @@ public class DashboardDataProvider implements IDataProvider<MessageGui> {
 		} else {
 			messagesFromDb = messageService.list(feed, new Pagination((int) first, (int) count), textSearch);
 		}
-		final List<MessageGui> messages = new ArrayList<>(messagesFromDb.size());
-		messagesFromDb.forEach(e -> messages.add(new MessageGui(e)));
+		final List<MessageGui> messages = messagesFromDb.stream().map(e -> new MessageGui(e))
+				.collect(Collectors.toList());
 		return messages.iterator();
 	}
 

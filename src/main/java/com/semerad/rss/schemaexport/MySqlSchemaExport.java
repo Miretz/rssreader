@@ -4,6 +4,8 @@ import java.util.EnumSet;
 
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 
@@ -23,14 +25,20 @@ public class MySqlSchemaExport {
 
 	public static void main(final String[] args) {
 
-		final MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder()
-				.applySetting("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect").build());
+		final ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+				.applySetting(AvailableSettings.DIALECT, "org.hibernate.dialect.MySQL5InnoDBDialect").build();
+
+		final MetadataSources metadata = new MetadataSources(serviceRegistry);
 
 		metadata.addAnnotatedClass(Message.class);
 		metadata.addAnnotatedClass(Feed.class);
 		metadata.addAnnotatedClass(Account.class);
 
-		new SchemaExport().setOutputFile("schema.sql").create(EnumSet.of(TargetType.SCRIPT), metadata.buildMetadata());
+		final SchemaExport schema = new SchemaExport();
+		schema.setOutputFile("schema.sql");
+		schema.setDelimiter(";");
+		schema.setFormat(true);
+		schema.create(EnumSet.of(TargetType.SCRIPT), metadata.buildMetadata());
 
 	}
 
