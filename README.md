@@ -29,7 +29,7 @@ RSS feed aggregator application
 
 ##Instructions:
 
-To initialize the db run the schema.sql file.
+To initialize the database execute the schema.sql file.
 
 Modify the database properties in:
 ```
