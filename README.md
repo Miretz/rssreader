@@ -4,7 +4,7 @@ RSS feed aggregator application
 
 ![RssReader](screenshot.png)
 
-##Features:
+## Features:
 - User Management
   - Login, Registration, Manage users
   
@@ -19,7 +19,7 @@ RSS feed aggregator application
   - Like flag
 
   
-##Technologies:
+## Technologies:
 - Java 1.8
 - Apache Wicket Framework
 - Spring Framework
@@ -27,7 +27,7 @@ RSS feed aggregator application
 - MySQL
 - Maven
 
-##Instructions:
+## Instructions:
 
 To initialize the database execute the schema.sql file.
 
