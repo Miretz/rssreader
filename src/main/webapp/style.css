@@ -209,3 +209,11 @@ table td, table td * {
     outline: none;
 }
 
+.img-summary {
+    margin: 4px;
+    float:left;
+    width:160px;
+    height: auto;
+}
+
+
